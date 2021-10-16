@@ -86,6 +86,15 @@ the search box in the top right and it will narrow down the selection;
 likewise, you can sort by other columns by clicking on an arrow next
 to the column name.
 
+The columns in the table are:
+
+- Title: name of the journal
+- requests: yearly total number of requests from that title
+- n: number of distinct rows in the CSV for this title.
+- rank: rank of the requests (highest first).
+- pct: requests for this journal as a fraction of all journals.
+- c_pct: cumulative version of the percentage, following the ranking.
+
 ```{r echo=FALSE}
 DT::datatable(dat_2019,
               rownames=FALSE,
