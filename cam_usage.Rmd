@@ -182,3 +182,9 @@ Coll Res Libr 80:694 Available at:
 https://crl.acrl.org/index.php/crl/article/view/17824/19653 [Accessed
 October 16, 2021].
 
+```
+library(ggplot2)
+library(plotly) 
+p <- ggplot(iris, aes(Sepal.Length, Petal.Length, colour=Species)) + geom_point()
+ ggplotly(p)
+```
