@@ -13,7 +13,7 @@ Through an FOI request, I have obtained the download statistics
 (COUNTER 5 format) for the calendar years 2019 and 2020 for
 ScienceDirect Usage at the University of Cambridge.
 
-The raw data are available in the [data](data/) folder.  Below is some
+The raw data are available in the [data](https://github.com/sje30/counter5/tree/main/data/) folder.  Below is some
 simple analysis of the data; please let me know if you see any errors
 in the analysis, particularly in the handling of the COUNTER R5 data.
 I have chosen to analyse the 'Total_Item_Requests', rather than the 
