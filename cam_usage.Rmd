@@ -1,0 +1,144 @@
+---
+title: "Download statistics from University of Cambridge for ScienceDirect"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+# Introduction
+
+Through an FOI request, I have obtained the download statistics
+(COUNTER 5 format) for the calendar years 2019 and 2020 for
+ScienceDirect Usage at the University of Cambridge.
+
+The raw data are available in the [data](data/) folder.  Below is some
+simple analysis of the data; please let me know if you see any errors
+in the analysis, particularly in the handling of the COUNTER R5 data.
+I have chosen to analyse the 'Total_Item_Requests', rather than the 
+'Unique_Item_Requests'.
+
+For each of the two years I present a searchable list of
+downloads/year that is ranked in decreasing order of downloads.  These
+data are then converted into a cumulative histogram of access.
+
+I have made no attempt currently to break down the journals into
+different groupings (e.g. Freedom collection).  This file is available
+as a Rmarkdown file.
+
+
+
+```{r init, echo=FALSE, results=FALSE, message=FALSE}
+require(tidyverse)
+require(readr)
+require(dplyr)
+
+read_data <- function(file) {
+  ## Return the journals and number of downloads per year.
+  ## Skip over the header of the file
+  dat <- read_csv(file, skip=13)
+
+  ## Ignore the YOP = 9999 for now (are they in the future?)
+  d2 = filter(dat, Metric_Type =="Total_Item_Requests", YOP!=9999 ) %>%
+    select(Title, YOP, Reporting_Period_Total)
+
+  summary2 <- d2 %>%
+    group_by(Title) %>%
+    summarise(requests = sum(Reporting_Period_Total), n = n()) %>%
+    arrange(desc(requests)) %>%
+    mutate(rank=1:n())
+
+  ## get the cumulative percentage of downloads by this journal
+  total_requests = sum(summary2$requests)
+  pct = 100.0 * round(summary2$requests / total_requests, 3)
+  c_pct = 100.0 * round(cumsum(summary2$requests) / total_requests, 3)
+  summary2 <- summary2 %>% mutate(pct=pct, c_pct=c_pct)
+
+  summary2
+}
+
+cumulative_plot <- function(tbl, main=NULL) {
+  plot(tbl$c_pct, main=main,
+       xlab='Journals', bty='n', las=1, ylim=c(0,100),
+       type='l', ylab='cumulative percentage of downloads', lwd=2)
+  abline(h=80, col='blue')
+  x = 0.2 * nrow(tbl)
+  abline(v=x, col='blue')
+}
+```
+
+
+# 2019 data
+
+```{r echo=FALSE, message=FALSE,results=FALSE}
+dat_2019 <- read_data("data/ScienceDirect_TR_J4_Standard_R5_Jan-2019_Dec-2019_University+of+Cambridge_20211014_1631.csv")
+```
+
+Total number of downloads: 
+`r format(sum(dat_2019$requests), scientific=FALSE)` from 
+`r nrow(dat_2019)` journals.
+
+
+Note: these tables are searchable; just type in e.g. a journal name in
+the search box in the top right and it will narrow down the selection;
+likewise, you can sort by other columns by clicking on an arrow next
+to the column name.
+
+```{r echo=FALSE}
+DT::datatable(dat_2019,
+              rownames=FALSE,
+             caption="Download statistics by journal, 2019.")
+```
+
+
+
+# 2020 data
+
+```{r echo=FALSE, message=FALSE,results=FALSE}
+dat_2020 <- read_data("data/ScienceDirect_TR_J4_Standard_R5_Jan-2020_Dec-2020_University+of+Cambridge_20211014_1708.csv")
+```
+
+Total number of downloads: 
+`r format(sum(dat_2020$requests), scientific=FALSE)` from 
+`r nrow(dat_2020)` journals.
+
+```{r echo=FALSE}
+DT::datatable(dat_2020,
+              rownames=FALSE,
+             caption="Download statistics by journal, 2020.")
+```
+
+# Cumulative plots
+
+These plots for 2019 and 2020 indicate that the data seem to follow
+the [Pareto principle](https://en.wikipedia.org/wiki/Pareto_principle): 20% of
+journals in the collection account for about 80% of downloads.
+
+```{r,echo=FALSE,fig.cap='Cumulative Downloads for 2019 and 2020',fig.width=12}
+par(mfrow=c(1,2))
+cumulative_plot(dat_2019, main='2019 Downloads')
+cumulative_plot(dat_2020, main='2020 Downloads')
+```
+
+
+# Discussion
+
+It is unsurprising to see that the journals that are most accessed are
+those that come from Cell Press and Lancet titles. The top-ranked
+journal, Cell, alone counts for 3-4% of all downloads.
+
+## Questions / future work
+
+- Why are there so many journals (about 500) with only one download in
+  the year?  Why are there none with zero downloads?
+  
+- For curiosity, what is the distribution of downloads over the year
+  (I've ignored monthly totals for now)?  Is there a seasonal effect
+  to download statistics?
+
+- Is it worth collecting this COUNTER R5 data from other UK
+  institutions?  Should it be freely available as a matter of routine?
+
+- Can this be combined with costs of titles to evaluate the cost of
+  subsets of journals?
