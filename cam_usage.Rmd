@@ -181,6 +181,53 @@ cumulative_plot2(dat_2019, main='2019 Downloads')
 cumulative_plot2(dat_2020, main='2020 Downloads')
 ```
 
+# Monthly requests
+
+As a check on the data, I looked at the monthly requests, and checked
+that they added up to the yearly requests (they do).  They also reveal
+(unsuprisingly) a seasonal effect: the summer months June--August and
+December have noticely fewer downloads.  March 2020 (the start of the
+pandemic) showed a slight dip, but not as dramatic as expected when
+people first started working at home.
+
+```{r,echo=FALSE, results=FALSE, message=FALSE}
+read_data_months <- function(file,year) {
+  ## Return the journals and number of downloads per year.
+  ## Skip over the header of the file
+  dat <- read_csv(file, skip=13)
+
+  months_year <- paste( months, rep(year,12), sep='-')
+  ## Ignore the YOP = 9999 for now (are they in the future?)
+  d2 = filter(dat, Metric_Type =="Total_Item_Requests", YOP!=9999 ) %>%
+    select(Title, YOP, Reporting_Period_Total, all_of(months_year))
+  d2
+}
+
+months <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
+            'Sep', 'Oct', 'Nov', 'Dec')
+
+plot_months <- function(datafile, year) {
+
+  dat <- read_data_months(datafile, year)
+  m = as.matrix(dat[-c(1,2)])
+  sums <- colSums(m)
+  stopifnot(sums[1] == sum(sums[-1])) ## check yearly total = sum of monthly totals
+  par(bty='n')
+  main=paste('Requests/month for ', year)
+  plot(sums[-1],xaxt='n', las=1, xlab='Month', ylab='Requests',
+       pch=19, main=main)
+  monthly_average=sums[1]/12
+  axis(1, at=1:12, labels=months)
+  text(x=2, y=monthly_average*1.02, labels='monthly average')
+  abline(h=monthly_average, lty=2)
+}
+```
+
+```{r,fig.width=10,fig.height=8,message=FALSE,results=FALSE,echo=FALSE}
+par(mfrow=c(2,1))
+plot_months("data/ScienceDirect_TR_J4_Standard_R5_Jan-2019_Dec-2019_University+of+Cambridge_20211014_1631.csv", "2019")
+plot_months("data/ScienceDirect_TR_J4_Standard_R5_Jan-2020_Dec-2020_University+of+Cambridge_20211014_1708.csv", "2020")
+```
 
 # Discussion
 
@@ -206,10 +253,6 @@ transition to more equitable models of publishing.
 - Why are there so many journals (about 500) with only one download in
   the year?  Why are there none with zero downloads?
   
-- For curiosity, what is the distribution of downloads over the year
-  (I've ignored monthly totals for now)?  Is there a seasonal effect
-  to download statistics?
-
 - Is it worth collecting this COUNTER R5 data from other UK
   institutions?  Should it be freely available as a matter of routine?
 
