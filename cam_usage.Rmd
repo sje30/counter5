@@ -129,6 +129,19 @@ It is unsurprising to see that the journals that are most accessed are
 those that come from Cell Press and Lancet titles. The top-ranked
 journal, Cell, alone counts for 3-4% of all downloads.
 
+Statistics like this are interesting to view, but should be viewed
+with caution (e.g. Wood-Doughty et al 2019).  I believe they are
+useful to help inform the value of a big deal versus unbundling
+(Thornton and Brundy 2021).  However, over-reliance on simple metrics
+like this to select which journals to keep and which to remove may
+disproportionality affect smaller disciplines.  As soon as these
+metrics drive decision making may lead to 'gaming', whereby
+researchers routinely download papers from their favourite journals
+simply to prevent them being cancelled.  Further, I'd hope that such
+statistics may not even be relevant in a few years, if we can
+transition to more equitable models of publishing.
+
+
 ## Questions / future work
 
 - Why are there so many journals (about 500) with only one download in
@@ -146,3 +159,17 @@ journal, Cell, alone counts for 3-4% of all downloads.
 
 See the [project home page](https://github.com/sje30/counter5) for all
 source material and e.g. any github issues.
+
+
+# References
+
+Thornton JB, Brundy C (2021) Elsevier title level pricing: Dissecting
+the bowl of spaghetti. J Libr Sch Commun 9:2410 Available at:
+https://jlsc-pub.org/article/10.7710/2162-3309.2410/.
+
+Wood-Doughty A, Bergstrom T, Steigerwald DG (2019) Do Download Reports
+Reliably Measure Journal Usage? Trusting the Fox to Count Your Hens?
+Coll Res Libr 80:694 Available at:
+https://crl.acrl.org/index.php/crl/article/view/17824/19653 [Accessed
+October 16, 2021].
+
