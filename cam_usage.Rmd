@@ -165,7 +165,7 @@ source material and e.g. any github issues.
 
 Thornton JB, Brundy C (2021) Elsevier title level pricing: Dissecting
 the bowl of spaghetti. J Libr Sch Commun 9:2410 Available at:
-https://jlsc-pub.org/article/10.7710/2162-3309.2410/.
+http://dx.doi.org/10.7710/2162-3309.2410.
 
 Wood-Doughty A, Bergstrom T, Steigerwald DG (2019) Do Download Reports
 Reliably Measure Journal Usage? Trusting the Fox to Count Your Hens?
