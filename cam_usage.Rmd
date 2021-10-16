@@ -34,7 +34,8 @@ as a Rmarkdown file.
 require(tidyverse)
 require(readr)
 require(dplyr)
-
+library(ggplot2)
+library(plotly)
 read_data <- function(file) {
   ## Return the journals and number of downloads per year.
   ## Skip over the header of the file
@@ -67,6 +68,48 @@ cumulative_plot <- function(tbl, main=NULL) {
   x = 0.2 * nrow(tbl)
   abline(v=x, col='blue')
 }
+
+vline <- function(x = 0, color = "blue") {
+  list(
+    type = "line", 
+    y0 = 0, 
+    y1 = 1, 
+    yref = "paper",
+    x0 = x, 
+    x1 = x, 
+    line = list(color = color)
+  )
+}
+
+hline <- function(y = 0, color = "blue") {
+  list(
+    type = "line", 
+    x0 = 0, 
+    x1 = 1, 
+    xref = "paper",
+    y0 = y, 
+    y1 = y, 
+    line = list(color = color)
+  )
+}
+## https://stackoverflow.com/questions/34093169/horizontal-vertical-line-in-plotly
+
+cumulative_plot2 <- function(tbl, main=NULL) {
+  ##p <- ggplot(tbl, aes(rank, c_pct)) + geom_point()
+  ##ggplotly(p, tooltip=c("title", "c_pct"))
+  plot_ly(data = tbl,
+          marker=list(color='black'),
+          x = ~rank,
+          y = ~c_pct,
+          hoverinfo = 'text',
+          text = ~paste(tbl$Title,
+                        '</br></br>rank ', rank, ' % ', tbl$c_pct)) %>%
+    layout(title=list(text=main),
+           xaxis=list(title='Journal rank'),
+           yaxis=list(title='Cumulative percentage of requests')) %>%
+    layout(shapes = list(vline(0.2 * nrow(tbl)), hline(80)))
+}
+
 ```
 
 
@@ -123,12 +166,19 @@ DT::datatable(dat_2020,
 
 These plots for 2019 and 2020 indicate that the data seem to follow
 the [Pareto principle](https://en.wikipedia.org/wiki/Pareto_principle): 20% of
-journals in the collection account for about 80% of downloads.
+journals in the collection account for about 80% of downloads.  You
+can use your mouse to hover over the curves to see individual journal
+titles and their data.
 
-```{r,echo=FALSE,fig.cap='Cumulative Downloads for 2019 and 2020',fig.width=12}
-par(mfrow=c(1,2))
-cumulative_plot(dat_2019, main='2019 Downloads')
-cumulative_plot(dat_2020, main='2020 Downloads')
+<!-- ```{r,echo=FALSE,fig.cap='Cumulative Downloads for 2019 and 2020',fig.width=12} -->
+<!-- par(mfrow=c(1,2)) -->
+<!-- cumulative_plot(dat_2019, main='2019 Downloads') -->
+<!-- cumulative_plot(dat_2020, main='2020 Downloads') -->
+<!-- ``` -->
+
+```{r,echo=FALSE,message=FALSE}
+cumulative_plot2(dat_2019, main='2019 Downloads')
+cumulative_plot2(dat_2020, main='2020 Downloads')
 ```
 
 
@@ -182,9 +232,3 @@ Coll Res Libr 80:694 Available at:
 https://crl.acrl.org/index.php/crl/article/view/17824/19653 [Accessed
 October 16, 2021].
 
-```
-library(ggplot2)
-library(plotly) 
-p <- ggplot(iris, aes(Sepal.Length, Petal.Length, colour=Species)) + geom_point()
- ggplotly(p)
-```
