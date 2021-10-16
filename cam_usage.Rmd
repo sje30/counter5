@@ -142,3 +142,6 @@ journal, Cell, alone counts for 3-4% of all downloads.
 
 - Can this be combined with costs of titles to evaluate the cost of
   subsets of journals?
+
+See the [project home page](https://github.com/sje30/counter5) for all
+source material and e.g. any github issues.
