@@ -1,0 +1,285 @@
+---
+title: "Download statistics from University of Oxford for ScienceDirect"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+# Introduction
+
+Through an FOI request, I have obtained the download statistics
+(COUNTER 5 format) for the calendar years 2019 and 2020 for
+ScienceDirect Usage at the University of Oxford.  These data
+exclude any Gold OA articles.
+
+The raw data are available in the [data](https://github.com/sje30/counter5/tree/main/data/) folder.  Below is some
+simple analysis of the data; please let me know if you see any errors
+in the analysis, particularly in the handling of the COUNTER R5 data.
+I have chosen to analyse the 'Total_Item_Requests', rather than the 
+'Unique_Item_Requests'.
+
+For each of the two years I present a searchable list of
+downloads/year that is ranked in decreasing order of downloads.  These
+data are then converted into a cumulative histogram of access.
+
+I have made no attempt currently to break down the journals into
+different groupings (e.g. Freedom collection).  This file is available
+as a Rmarkdown file.
+
+
+
+```{r init, echo=FALSE, results=FALSE, message=FALSE}
+require(tidyverse)
+require(readr)
+require(readxl)
+require(dplyr)
+library(ggplot2)
+library(plotly)
+read_data <- function(file) {
+  ## Return the journals and number of downloads per year.
+  ## Skip over the header of the file
+  dat <- read_excel(file, skip=13)
+
+  ## Ignore the YOP = 9999 for now (are they in the future?)
+  d2 = filter(dat, Metric_Type =="Total_Item_Requests", YOP!=9999 ) %>%
+    select(Title, YOP, Reporting_Period_Total)
+
+  summary2 <- d2 %>%
+    group_by(Title) %>%
+    summarise(requests = sum(Reporting_Period_Total), n = n()) %>%
+    arrange(desc(requests)) %>%
+    mutate(rank=1:n())
+
+  ## get the cumulative percentage of downloads by this journal
+  total_requests = sum(summary2$requests)
+  pct = 100.0 * round(summary2$requests / total_requests, 3)
+  c_pct = 100.0 * round(cumsum(summary2$requests) / total_requests, 3)
+  summary2 <- summary2 %>% mutate(pct=pct, c_pct=c_pct)
+
+  summary2
+}
+
+cumulative_plot <- function(tbl, main=NULL) {
+  plot(tbl$c_pct, main=main,
+       xlab='Journals', bty='n', las=1, ylim=c(0,100),
+       type='l', ylab='cumulative percentage of downloads', lwd=2)
+  abline(h=80, col='blue')
+  x = 0.2 * nrow(tbl)
+  abline(v=x, col='blue')
+}
+
+vline <- function(x = 0, color = "blue") {
+  list(
+    type = "line", 
+    y0 = 0, 
+    y1 = 1, 
+    yref = "paper",
+    x0 = x, 
+    x1 = x, 
+    line = list(color = color)
+  )
+}
+
+hline <- function(y = 0, color = "blue") {
+  list(
+    type = "line", 
+    x0 = 0, 
+    x1 = 1, 
+    xref = "paper",
+    y0 = y, 
+    y1 = y, 
+    line = list(color = color)
+  )
+}
+## https://stackoverflow.com/questions/34093169/horizontal-vertical-line-in-plotly
+
+cumulative_plot2 <- function(tbl, main=NULL) {
+  ##p <- ggplot(tbl, aes(rank, c_pct)) + geom_point()
+  ##ggplotly(p, tooltip=c("title", "c_pct"))
+  plot_ly(data = tbl,
+          marker=list(color='black'),
+          x = ~rank,
+          y = ~c_pct,
+          hoverinfo = 'text',
+          text = ~paste(tbl$Title,
+                        '</br></br>rank ', rank, ' % ', tbl$c_pct)) %>%
+    layout(title=list(text=main),
+           xaxis=list(title='Journal rank'),
+           yaxis=list(title='Cumulative percentage of requests')) %>%
+    layout(shapes = list(vline(0.2 * nrow(tbl)), hline(80)))
+}
+
+```
+
+
+# 2019 data
+
+**WARNING: Please ignore 2019 data; it is incorrect.**
+
+```{r echo=FALSE, message=FALSE,results=FALSE}
+file_2019 <- "data/ox/FOI-20211023-4 annex A - 2019 report.xlsx"
+file_2020 <- "data/ox/FOI-20211023-4 annex B - 2020 report.xlsx"
+dat_2019 <- read_data(file_2019)
+```
+
+Total number of downloads: 
+`r format(sum(dat_2019$requests), scientific=FALSE)` from 
+`r nrow(dat_2019)` journals.
+
+
+Note: these tables are searchable; just type in e.g. a journal name in
+the search box in the top right and it will narrow down the selection;
+likewise, you can sort by other columns by clicking on an arrow next
+to the column name.
+
+The columns in the table are:
+
+- Title: name of the journal
+- requests: yearly total number of requests from that title
+- n: number of distinct rows in the CSV for this title.
+- rank: rank of the requests (highest first).
+- pct: requests for this journal as a fraction of all journals.
+- c_pct: cumulative version of the percentage, following the ranking.
+
+<!-- ```{r echo=FALSE} -->
+<!-- DT::datatable(dat_2019, -->
+<!--               rownames=FALSE, -->
+<!--              caption="Download statistics by journal, 2019.") -->
+<!-- ``` -->
+
+
+
+
+# 2020 data
+
+
+
+```{r echo=FALSE, message=FALSE,results=FALSE}
+dat_2020 <- read_data(file_2020)
+```
+
+Total number of downloads: 
+`r format(sum(dat_2020$requests), scientific=FALSE)` from 
+`r nrow(dat_2020)` journals.
+
+```{r echo=FALSE}
+DT::datatable(dat_2020,
+              rownames=FALSE,
+             caption="Download statistics by journal, 2020.")
+```
+
+# Cumulative plots
+
+These plots for 2019 and 2020 indicate that the data seem to follow
+the [Pareto principle](https://en.wikipedia.org/wiki/Pareto_principle): 20% of
+journals in the collection account for about 80% of downloads.  You
+can use your mouse to hover over the curves to see individual journal
+titles and their data.
+
+<!-- ```{r,echo=FALSE,fig.cap='Cumulative Downloads for 2019 and 2020',fig.width=12} -->
+<!-- par(mfrow=c(1,2)) -->
+<!-- cumulative_plot(dat_2019, main='2019 Downloads') -->
+<!-- cumulative_plot(dat_2020, main='2020 Downloads') -->
+<!-- ``` -->
+
+```{r,echo=FALSE,message=FALSE}
+##cumulative_plot2(dat_2019, main='2019 Downloads')
+cumulative_plot2(dat_2020, main='2020 Downloads')
+```
+
+<!-- # Monthly requests -->
+
+<!-- As a check on the data, I looked at the monthly requests, and checked -->
+<!-- that they added up to the yearly requests (they do).  They also reveal -->
+<!-- (unsuprisingly) a seasonal effect: the summer months June--August and -->
+<!-- December have noticely fewer downloads.  March 2020 (the start of the -->
+<!-- pandemic) showed a slight dip, but not as dramatic as expected when -->
+<!-- people first started working at home. -->
+
+```{r,echo=FALSE, results=FALSE, message=FALSE}
+read_data_months <- function(file,year) {
+  ## Return the journals and number of downloads per year.
+  ## Skip over the header of the file
+  dat <- read_excel(file, skip=13)
+
+  months_year <- paste( months, rep(year,12), sep='-')
+  ## Ignore the YOP = 9999 for now (are they in the future?)
+  d2 = filter(dat, Metric_Type =="Total_Item_Requests", YOP!=9999 ) %>%
+    select(Title, YOP, Reporting_Period_Total, all_of(months_year))
+  d2
+}
+
+months <- c('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
+            'Sep', 'Oct', 'Nov', 'Dec')
+
+plot_months <- function(datafile, year) {
+
+  dat <- read_data_months(datafile, year)
+  m = as.matrix(dat[-c(1,2)])
+  sums <- colSums(m)
+  stopifnot(sums[1] == sum(sums[-1])) ## check yearly total = sum of monthly totals
+  par(bty='n')
+  main=paste('Requests/month for ', year)
+  plot(sums[-1],xaxt='n', las=1, xlab='Month', ylab='Requests',
+       pch=19, main=main)
+  monthly_average=sums[1]/12
+  axis(1, at=1:12, labels=months)
+  text(x=2, y=monthly_average*1.02, labels='monthly average')
+  abline(h=monthly_average, lty=2)
+}
+```
+
+```{r,fig.width=10,fig.height=8,message=FALSE,results=FALSE,echo=FALSE}
+#par(mfrow=c(2,1))
+#plot_months(file_2019, "2019")
+#plot_months(file_2020, "2020")
+```
+
+# Discussion
+
+It is unsurprising to see that the journals that are most accessed are
+those that come from Cell Press and Lancet titles. The top-ranked
+journal, Cell, alone counts for 3-4% of all downloads.
+
+Statistics like this are interesting to view, but should be viewed
+with caution (e.g. Wood-Doughty et al 2019).  I believe they are
+useful to help inform the value of a big deal versus unbundling
+(Thornton and Brundy 2021).  However, over-reliance on simple metrics
+like this to select which journals to keep and which to remove may
+disproportionality affect smaller disciplines.  As soon as these
+metrics drive decision making may lead to 'gaming', whereby
+researchers routinely download papers from their favourite journals
+simply to prevent them being cancelled.  Further, I'd hope that such
+statistics may not even be relevant in a few years, if we can
+transition to more equitable models of publishing.
+
+
+## Questions / future work
+
+- Why are there so many journals (about 500) with only one download in
+  the year?  Why are there none with zero downloads?
+  
+- Is it worth collecting this COUNTER R5 data from other UK
+  institutions?  Should it be freely available as a matter of routine?
+
+- Can this be combined with costs of titles to evaluate the cost of
+  subsets of journals?
+
+See the [project home page](https://github.com/sje30/counter5) for all
+source material and e.g. any github issues.
+
+
+# References
+
+Thornton JB, Brundy C (2021) Elsevier title level pricing: Dissecting
+the bowl of spaghetti. J Libr Sch Commun 9:2410 Available at:
+http://dx.doi.org/10.7710/2162-3309.2410.
+
+Wood-Doughty A, Bergstrom T, Steigerwald DG (2019) Do Download Reports
+Reliably Measure Journal Usage? Trusting the Fox to Count Your Hens?
+Coll Res Libr 80:694 Available at:
+https://crl.acrl.org/index.php/crl/article/view/17824/19653 [Accessed
+October 16, 2021].
+

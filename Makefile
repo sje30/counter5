@@ -1,3 +1,6 @@
+ox_usage.html: ox_usage.Rmd
+	Rscript -e 'rmarkdown::render("$^")'
+
 cam_usage.html: cam_usage.Rmd
 	Rscript -e 'rmarkdown::render("$^")'
 
