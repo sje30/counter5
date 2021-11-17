@@ -240,8 +240,8 @@ plot_months <- function(datafile, year) {
 # Discussion
 
 It is unsurprising to see that the journals that are most accessed are
-those that come from Cell Press and Lancet titles. The top-ranked
-journal, Cell, alone counts for 3-4% of all downloads.
+those that come from Cell Press and Lancet titles. <!-- The top-ranked -->
+<!-- journal, Cell, alone counts for 3-4% of all downloads. -->
 
 Statistics like this are interesting to view, but should be viewed
 with caution (e.g. Wood-Doughty et al 2019).  I believe they are
