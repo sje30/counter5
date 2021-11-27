@@ -4,7 +4,7 @@ This is the homepage for the COUNTER R5 data for ScienceDirect
 articles (i.e. those published by Elsevier).  So far I have data from
 Cambridge and Oxford for 2019 an 2020.
 
-[data](data/) stores the data.
+[data](https://github.com/sje30/counter5/tree/main/data/) stores the data.
 
 
 
